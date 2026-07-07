@@ -70,7 +70,7 @@ export function NewQuoteClient() {
     
     // In a real app, GST and Discount might be complex. Keeping it simple per PRD.
     const grandTotal = subtotal - totals.discount + totals.gst + totals.transport
-    setTotals(prev => ({ ...prev, subtotal, grandTotal }))
+    setTotals(prev => ({ ...prev, subtotal: Number(subtotal.toFixed(2)), grandTotal: Number(grandTotal.toFixed(2)) }))
   }, [items, totals.discount, totals.gst, totals.transport])
 
   const handleCreateCustomer = async () => {
@@ -130,21 +130,17 @@ export function NewQuoteClient() {
     
     const amount = (finalQty * Number(rate)) - Number(discount || 0)
     
-    const finalLength = unitScale === "INCH" && length ? Number(length) / 12 : Number(length)
-    const finalWidth = unitScale === "INCH" && width ? Number(width) / 12 : Number(width)
-    const finalHeight = unitScale === "INCH" && height ? Number(height) / 12 : Number(height)
-    
     setItems([...items, {
       productId: selectedProduct.id,
       productName: selectedProduct.name,
       unit: selectedProduct.unit,
-      length: finalLength || null,
-      width: finalWidth || null,
-      height: finalHeight || null,
+      length: Number(length) || null,
+      width: Number(width) || null,
+      height: Number(height) || null,
       pieces: Number(pieces) || null,
-      quantity: finalQty,
+      quantity: Number(finalQty.toFixed(2)),
       rate: Number(rate),
-      amount
+      amount: Number(amount.toFixed(2))
     }])
     
     setSelectedProduct(null)
@@ -459,7 +455,7 @@ export function NewQuoteClient() {
                   </div>
                   <div className="flex items-center justify-between pt-4 border-t border-hairline">
                     <div className="display-sm text-ink">
-                      Total: ₹{(getCalculatedQty(selectedProduct, pieces, length, width, height, unitScale) * (Number(rate) || 0)) - (Number(discount) || 0)}
+                      Total: ₹{((getCalculatedQty(selectedProduct, pieces, length, width, height, unitScale) * (Number(rate) || 0)) - (Number(discount) || 0)).toFixed(2)}
                     </div>
                   </div>
                   <div className="flex gap-3 pt-4">
