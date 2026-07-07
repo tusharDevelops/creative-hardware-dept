@@ -13,7 +13,7 @@ export function LogoutButton({ variant = "ghost", className }: { variant?: "defa
       }}
     >
       <LogOut className="w-4 h-4 mr-2" />
-      Sign Out
+      <span>Sign Out</span>
     </button>
   )
 }
