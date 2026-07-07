@@ -222,92 +222,91 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
         </div>
       </div>
 
-      <Card className="border-none bg-surface-card rounded-[var(--radius-lg)] overflow-hidden">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead className="text-[13px] text-muted-soft uppercase bg-canvas border-b border-hairline">
-                <tr>
-                  <th className="px-4 py-3 font-semibold text-ink">Product Name</th>
-                  <th className="px-4 py-3 font-semibold text-ink">Unit</th>
-                  <th className="px-4 py-3 font-semibold text-right text-ink">Selling Rate</th>
-                  {isAdmin && <th className="px-4 py-3 font-semibold text-right text-brand-accent">Dealer Price</th>}
-                  <th className="px-4 py-3 font-semibold text-right text-ink">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-hairline">
-                {loading ? (
-                  <tr>
-                    <td colSpan={isAdmin ? 5 : 4} className="px-4 py-8 text-center text-muted">
-                      Loading products...
-                    </td>
-                  </tr>
-                ) : products.length === 0 ? (
-                  <tr>
-                    <td colSpan={isAdmin ? 5 : 4} className="px-4 py-8 text-center text-muted">
-                      No products found.
-                    </td>
-                  </tr>
-                ) : (
-                  products.map((product) => (
-                    <tr key={product.id} className="hover:bg-surface-soft transition-colors">
-                      <td className="px-4 py-3 font-medium text-ink flex items-center gap-3">
-                        {product.imageUrl ? (
-                          <img src={product.imageUrl} alt={product.name} className="w-8 h-8 rounded object-cover border border-hairline bg-canvas" />
-                        ) : (
-                          <div className="w-8 h-8 rounded bg-surface-dark/10 flex items-center justify-center text-muted-soft text-xs font-bold border border-hairline">IMG</div>
-                        )}
-                        {product.name}
-                      </td>
-                      <td className="px-4 py-3 text-muted">{product.unit}</td>
-                      <td className="px-4 py-3 text-right font-medium text-ink">₹{product.sellingRate}</td>
-                      {isAdmin && (
-                        <td className="px-4 py-3 text-right text-brand-accent font-medium">
-                          {product.dealerPrice ? `₹${product.dealerPrice}` : "-"}
-                        </td>
-                      )}
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-muted hover:text-ink"
-                            onClick={() => {
-                              setEditingProduct(product)
-                              setUnitScale("FEET")
-                              setNewProduct({
-                                name: product.name,
-                                unit: product.unit,
-                                defaultLength: product.defaultLength ? product.defaultLength.toString() : "",
-                                defaultWidth: product.defaultWidth ? product.defaultWidth.toString() : "",
-                                defaultHeight: product.defaultHeight ? product.defaultHeight.toString() : "",
-                                sellingRate: product.sellingRate.toString(),
-                                dealerPrice: product.dealerPrice ? product.dealerPrice.toString() : "",
-                                image: null
-                              })
-                              setShowAddModal(true)
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          {isAdmin && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-muted hover:text-error"
-                              onClick={() => handleDeleteProduct(product.id, product.name)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {loading ? (
+          <div className="col-span-full py-8 text-center text-muted">
+            Loading products...
           </div>
+        ) : products.length === 0 ? (
+          <div className="col-span-full py-8 text-center text-muted">
+            No products found.
+          </div>
+        ) : (
+          products.map((product) => (
+            <Card key={product.id} className="bg-canvas border border-hairline shadow-none hover:shadow-sm transition-shadow rounded-[var(--radius-lg)] overflow-hidden flex flex-col">
+              <CardContent className="p-4 flex-1 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                  {product.imageUrl ? (
+                    <img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-lg object-cover border border-hairline bg-surface-soft shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-surface-dark/5 flex items-center justify-center text-muted-soft text-xs font-bold border border-hairline shrink-0">IMG</div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="title-sm text-ink truncate">{product.name}</h3>
+                    <div className="text-[13px] text-muted flex items-center gap-2 mt-1">
+                      <span className="bg-surface-soft px-2 py-0.5 rounded-md font-medium text-[11px] uppercase tracking-wider">{product.unit}</span>
+                      {product.defaultLength && (
+                        <span>
+                          {product.defaultLength} {product.defaultWidth ? `× ${product.defaultWidth}` : ''} {product.defaultHeight ? `× ${product.defaultHeight}` : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 mt-auto pt-4 border-t border-hairline">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-muted font-medium mb-1">Selling Rate</div>
+                    <div className="font-semibold text-ink text-lg">₹{product.sellingRate}</div>
+                  </div>
+                  {isAdmin && (
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wider text-brand-accent font-medium mb-1">Dealer Price</div>
+                      <div className="font-semibold text-brand-accent/90 text-lg">{product.dealerPrice ? `₹${product.dealerPrice}` : "-"}</div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+              <div className="bg-surface-soft/50 border-t border-hairline p-2 flex justify-end gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-muted hover:text-ink h-8 px-3 text-[13px]"
+                  onClick={() => {
+                    setEditingProduct(product)
+                    setUnitScale("FEET")
+                    setNewProduct({
+                      name: product.name,
+                      unit: product.unit,
+                      defaultLength: product.defaultLength ? product.defaultLength.toString() : "",
+                      defaultWidth: product.defaultWidth ? product.defaultWidth.toString() : "",
+                      defaultHeight: product.defaultHeight ? product.defaultHeight.toString() : "",
+                      sellingRate: product.sellingRate.toString(),
+                      dealerPrice: product.dealerPrice ? product.dealerPrice.toString() : "",
+                      image: null
+                    })
+                    setShowAddModal(true)
+                  }}
+                >
+                  <Edit className="h-3.5 w-3.5 mr-1.5" />
+                  Edit
+                </Button>
+                {isAdmin && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-error/70 hover:text-error hover:bg-error/10 h-8 px-3 text-[13px]"
+                    onClick={() => handleDeleteProduct(product.id, product.name)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Delete
+                  </Button>
+                )}
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
           
           {/* Pagination Controls */}
           {totalPages > 1 && (
@@ -335,8 +334,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+
 
       {/* Add Product Modal */}
       {showAddModal && (

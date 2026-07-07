@@ -133,61 +133,71 @@ export function CustomersClient() {
         </Button>
       </div>
 
-      <Card className="border-none bg-surface-card rounded-[var(--radius-lg)] overflow-hidden">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead className="text-[13px] text-muted-soft uppercase bg-canvas border-b border-hairline">
-                <tr>
-                  <th className="px-4 py-3 font-semibold text-ink">Name</th>
-                  <th className="px-4 py-3 font-semibold text-ink">Mobile</th>
-                  <th className="px-4 py-3 font-semibold text-ink hidden md:table-cell">Address</th>
-                  <th className="px-4 py-3 font-semibold text-ink hidden md:table-cell">GST</th>
-                  <th className="px-4 py-3 font-semibold text-right text-ink">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-hairline">
-                {loading ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted">Loading customers...</td>
-                  </tr>
-                ) : customers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center">
-                      <div className="flex flex-col items-center gap-2">
-                        <Users className="w-8 h-8 text-muted-soft" />
-                        <p className="text-muted font-medium">No customers found</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  customers.map((c) => (
-                    <tr key={c.id} className="hover:bg-surface-soft transition-colors">
-                      <td className="px-4 py-3 font-medium text-ink">{c.name}</td>
-                      <td className="px-4 py-3 text-muted">{c.mobile}</td>
-                      <td className="px-4 py-3 text-muted hidden md:table-cell">{c.address || "—"}</td>
-                      <td className="px-4 py-3 text-muted hidden md:table-cell">{c.gstNumber || "—"}</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Link href={`/customers/${c.id}`}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted hover:text-ink">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted hover:text-ink" onClick={() => openEditModal(c)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted hover:text-error" onClick={() => handleDelete(c.id, c.name)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {loading ? (
+          <div className="col-span-full py-8 text-center text-muted">
+            Loading customers...
           </div>
+        ) : customers.length === 0 ? (
+          <div className="col-span-full py-8 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <Users className="w-8 h-8 text-muted-soft" />
+              <p className="text-muted font-medium">No customers found</p>
+            </div>
+          </div>
+        ) : (
+          customers.map((c) => (
+            <Card key={c.id} className="bg-canvas border border-hairline shadow-none hover:shadow-sm transition-shadow rounded-[var(--radius-lg)] overflow-hidden flex flex-col">
+              <CardContent className="p-4 flex-1 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-surface-soft flex items-center justify-center text-ink font-bold border border-hairline shrink-0">
+                    {c.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="title-sm text-ink truncate">{c.name}</h3>
+                    <div className="text-[13px] text-muted flex items-center gap-2 mt-1">
+                      {c.mobile}
+                    </div>
+                  </div>
+                </div>
+
+                {(c.address || c.gstNumber) && (
+                  <div className="grid grid-cols-1 gap-2 mt-auto pt-4 border-t border-hairline">
+                    {c.address && (
+                      <div>
+                        <div className="text-[11px] uppercase tracking-wider text-muted font-medium mb-1">Address</div>
+                        <div className="text-[13px] text-ink truncate">{c.address}</div>
+                      </div>
+                    )}
+                    {c.gstNumber && (
+                      <div>
+                        <div className="text-[11px] uppercase tracking-wider text-muted font-medium mb-1">GST Number</div>
+                        <div className="text-[13px] text-ink truncate">{c.gstNumber}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+              <div className="bg-surface-soft/50 border-t border-hairline p-2 flex justify-end gap-2">
+                <Link href={`/customers/${c.id}`}>
+                  <Button variant="ghost" size="sm" className="text-muted hover:text-ink h-8 px-3 text-[13px]">
+                    <Eye className="h-3.5 w-3.5 mr-1.5" />
+                    View
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" className="text-muted hover:text-ink h-8 px-3 text-[13px]" onClick={() => openEditModal(c)}>
+                  <Edit className="h-3.5 w-3.5 mr-1.5" />
+                  Edit
+                </Button>
+                <Button variant="ghost" size="sm" className="text-error/70 hover:text-error hover:bg-error/10 h-8 px-3 text-[13px]" onClick={() => handleDelete(c.id, c.name)}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  Delete
+                </Button>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -206,8 +216,7 @@ export function CustomersClient() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+
 
       {/* Add/Edit Modal */}
       {showModal && (

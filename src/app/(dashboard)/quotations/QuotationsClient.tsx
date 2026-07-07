@@ -105,56 +105,60 @@ export function QuotationsClient() {
         </Link>
       </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
-          <div className="text-center p-8 text-muted">Loading quotations...</div>
+          <div className="col-span-full py-8 text-center text-muted">Loading quotations...</div>
         ) : quotations.length === 0 ? (
-          <div className="text-center p-8 text-muted">No quotations found.</div>
+          <div className="col-span-full py-8 text-center text-muted">No quotations found.</div>
         ) : (
           quotations.map((quote) => (
-            <Card key={quote.id} className="border-none bg-surface-card rounded-[var(--radius-lg)] shadow-none">
-              <CardContent className="p-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                <div className="flex items-start gap-4">
-                  <div className="bg-canvas text-ink p-3 rounded-[var(--radius-md)] hidden sm:block border border-hairline">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="title-md text-ink">{quote.quotationNumber}</span>
-                      <span className="text-[12px] px-2 py-1 bg-surface-soft text-muted rounded-[var(--radius-pill)] font-medium">
-                        {new Date(quote.quotationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </span>
+            <Card key={quote.id} className="bg-canvas border border-hairline shadow-none hover:shadow-sm transition-shadow rounded-[var(--radius-lg)] overflow-hidden flex flex-col">
+              <CardContent className="p-4 flex-1 flex flex-col gap-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-surface-soft text-ink p-2 rounded-[var(--radius-md)] border border-hairline shrink-0">
+                      <FileText className="w-5 h-5" />
                     </div>
-                    <div className="font-medium text-ink">{quote.customer.name}</div>
-                    <div className="text-[13px] text-muted-soft">{quote.customer.mobile}</div>
+                    <div>
+                      <div className="title-sm text-ink">{quote.quotationNumber}</div>
+                      <div className="text-[12px] text-muted-soft">
+                        {new Date(quote.quotationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full border-t border-hairline sm:border-0 pt-4 sm:pt-0">
-                  <div className="text-left sm:text-right">
-                    <div className="text-[13px] text-muted-soft">Grand Total</div>
-                    <div className="display-sm text-ink">₹{quote.grandTotal}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleDownloadPdf(quote.id, quote.quotationNumber)}
-                      className="shrink-0 bg-canvas"
-                    >
-                      <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Download</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleDeleteQuote(quote.id, quote.quotationNumber)}
-                      className="shrink-0 bg-canvas text-error hover:bg-error/10 hover:text-error hover:border-error"
-                      size="icon"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted font-medium mb-1">Customer</div>
+                  <div className="font-medium text-ink truncate">{quote.customer.name}</div>
+                  <div className="text-[13px] text-muted-soft">{quote.customer.mobile}</div>
+                </div>
+                
+                <div className="mt-auto pt-4 border-t border-hairline">
+                  <div className="text-[11px] uppercase tracking-wider text-muted font-medium mb-1">Grand Total</div>
+                  <div className="font-semibold text-ink text-lg">₹{quote.grandTotal}</div>
                 </div>
               </CardContent>
+              <div className="bg-surface-soft/50 border-t border-hairline p-2 flex justify-end gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-muted hover:text-ink h-8 px-3 text-[13px]"
+                  onClick={() => handleDownloadPdf(quote.id, quote.quotationNumber)}
+                >
+                  <Download className="h-3.5 w-3.5 mr-1.5" />
+                  PDF
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-error/70 hover:text-error hover:bg-error/10 h-8 px-3 text-[13px]"
+                  onClick={() => handleDeleteQuote(quote.id, quote.quotationNumber)}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  Delete
+                </Button>
+              </div>
             </Card>
           ))
         )}
