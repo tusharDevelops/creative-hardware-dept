@@ -33,6 +33,7 @@ export function NewQuoteClient() {
   const [height, setHeight] = useState<number | "">("")
   const [rate, setRate] = useState<number | "">("")
   const [discount, setDiscount] = useState<number | "">(0)
+  const [unitScale, setUnitScale] = useState<"FEET" | "INCH">("FEET")
 
   // Fetch customers
   useEffect(() => {
@@ -95,12 +96,18 @@ export function NewQuoteClient() {
   }
 
   // Dynamic quantity calculation based on unit
-  const getCalculatedQty = (product: any, p: number|"", l: number|"", w: number|"", h: number|"") => {
+  const getCalculatedQty = (product: any, p: number|"", l: number|"", w: number|"", h: number|"", scale: "FEET"|"INCH" = "FEET") => {
     if (!product) return 0
     const pcs = Number(p) || 0
-    const len = Number(l) || 0
-    const wid = Number(w) || 0
-    const hgt = Number(h) || 0
+    let len = Number(l) || 0
+    let wid = Number(w) || 0
+    let hgt = Number(h) || 0
+    
+    if (scale === "INCH") {
+      len = len / 12
+      wid = wid / 12
+      hgt = hgt / 12
+    }
     
     const u = product.unit?.toUpperCase() || ""
     if (["SQFT", "SQM", "SQRFT"].includes(u)) {
@@ -114,7 +121,7 @@ export function NewQuoteClient() {
   }
 
   const handleAddItem = () => {
-    const finalQty = getCalculatedQty(selectedProduct, pieces, length, width, height)
+    const finalQty = getCalculatedQty(selectedProduct, pieces, length, width, height, unitScale)
     
     if (!selectedProduct || finalQty <= 0 || !rate) {
       toast.error("Please fill dimensions/quantity and rate")
@@ -123,13 +130,17 @@ export function NewQuoteClient() {
     
     const amount = (finalQty * Number(rate)) - Number(discount || 0)
     
+    const finalLength = unitScale === "INCH" && length ? Number(length) / 12 : Number(length)
+    const finalWidth = unitScale === "INCH" && width ? Number(width) / 12 : Number(width)
+    const finalHeight = unitScale === "INCH" && height ? Number(height) / 12 : Number(height)
+    
     setItems([...items, {
       productId: selectedProduct.id,
       productName: selectedProduct.name,
       unit: selectedProduct.unit,
-      length: Number(length) || null,
-      width: Number(width) || null,
-      height: Number(height) || null,
+      length: finalLength || null,
+      width: finalWidth || null,
+      height: finalHeight || null,
       pieces: Number(pieces) || null,
       quantity: finalQty,
       rate: Number(rate),
@@ -270,6 +281,7 @@ export function NewQuoteClient() {
                       setHeight(p.defaultHeight ? p.defaultHeight : "")
                       setRate(p.sellingRate)
                       setDiscount(0)
+                      setUnitScale("FEET")
                       setProducts([])
                     }}
                   >
@@ -350,23 +362,59 @@ export function NewQuoteClient() {
 
                     return (
                       <div className="space-y-4">
-                        {/* Dimensional Inputs (Read-Only) */}
+                        {/* Measurement Toggle */}
+                        {!isFlat && (!selectedProduct.defaultLength) && (
+                          <div className="flex bg-surface-soft p-1 rounded-[var(--radius-lg)] w-fit">
+                            <button
+                              className={`px-4 py-1.5 text-[13px] font-medium rounded-[var(--radius-md)] transition-colors ${unitScale === "FEET" ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+                              onClick={() => setUnitScale("FEET")}
+                            >
+                              Feet
+                            </button>
+                            <button
+                              className={`px-4 py-1.5 text-[13px] font-medium rounded-[var(--radius-md)] transition-colors ${unitScale === "INCH" ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+                              onClick={() => setUnitScale("INCH")}
+                            >
+                              Inch
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Dimensional Inputs */}
                         {!isFlat && (
                           <div className="grid grid-cols-3 gap-3">
                             <div className="space-y-2">
-                              <label className="text-[12px] font-medium text-muted">Length</label>
-                              <Input type="number" value={length} readOnly className="h-10 bg-surface-soft opacity-70" />
+                              <label className="text-[12px] font-medium text-muted">Length {unitScale === "INCH" ? "(in)" : "(ft)"}</label>
+                              <Input 
+                                type="number" 
+                                value={length} 
+                                onChange={e => setLength(Number(e.target.value) || "")}
+                                readOnly={!!selectedProduct.defaultLength} 
+                                className={`h-10 ${!!selectedProduct.defaultLength ? 'bg-surface-soft opacity-70' : 'bg-white border-hairline'}`} 
+                              />
                             </div>
                             {(is2D || is3D) && (
                               <div className="space-y-2">
-                                <label className="text-[12px] font-medium text-muted">Width</label>
-                                <Input type="number" value={width} readOnly className="h-10 bg-surface-soft opacity-70" />
+                                <label className="text-[12px] font-medium text-muted">Width {unitScale === "INCH" ? "(in)" : "(ft)"}</label>
+                                <Input 
+                                  type="number" 
+                                  value={width} 
+                                  onChange={e => setWidth(Number(e.target.value) || "")}
+                                  readOnly={!!selectedProduct.defaultWidth} 
+                                  className={`h-10 ${!!selectedProduct.defaultWidth ? 'bg-surface-soft opacity-70' : 'bg-white border-hairline'}`} 
+                                />
                               </div>
                             )}
                             {is3D && (
                               <div className="space-y-2">
-                                <label className="text-[12px] font-medium text-muted">Height</label>
-                                <Input type="number" value={height} readOnly className="h-10 bg-surface-soft opacity-70" />
+                                <label className="text-[12px] font-medium text-muted">Height {unitScale === "INCH" ? "(in)" : "(ft)"}</label>
+                                <Input 
+                                  type="number" 
+                                  value={height} 
+                                  onChange={e => setHeight(Number(e.target.value) || "")}
+                                  readOnly={!!selectedProduct.defaultHeight} 
+                                  className={`h-10 ${!!selectedProduct.defaultHeight ? 'bg-surface-soft opacity-70' : 'bg-white border-hairline'}`} 
+                                />
                               </div>
                             )}
                           </div>
@@ -411,7 +459,7 @@ export function NewQuoteClient() {
                   </div>
                   <div className="flex items-center justify-between pt-4 border-t border-hairline">
                     <div className="display-sm text-ink">
-                      Total: ₹{(getCalculatedQty(selectedProduct, pieces, length, width, height) * (Number(rate) || 0)) - (Number(discount) || 0)}
+                      Total: ₹{(getCalculatedQty(selectedProduct, pieces, length, width, height, unitScale) * (Number(rate) || 0)) - (Number(discount) || 0)}
                     </div>
                   </div>
                   <div className="flex gap-3 pt-4">

@@ -17,6 +17,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [saving, setSaving] = useState(false)
+  const [unitScale, setUnitScale] = useState<"FEET" | "INCH">("FEET")
   
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -105,9 +106,21 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
       if (editingProduct) formData.append("id", editingProduct.id)
       formData.append("name", newProduct.name)
       formData.append("unit", newProduct.unit)
-      if (newProduct.defaultLength) formData.append("defaultLength", newProduct.defaultLength)
-      if (newProduct.defaultWidth) formData.append("defaultWidth", newProduct.defaultWidth)
-      if (newProduct.defaultHeight) formData.append("defaultHeight", newProduct.defaultHeight)
+      
+      let dLen = newProduct.defaultLength
+      let dWid = newProduct.defaultWidth
+      let dHgt = newProduct.defaultHeight
+      
+      if (unitScale === "INCH") {
+        if (dLen) dLen = (Number(dLen) / 12).toString()
+        if (dWid) dWid = (Number(dWid) / 12).toString()
+        if (dHgt) dHgt = (Number(dHgt) / 12).toString()
+      }
+
+      if (dLen) formData.append("defaultLength", dLen)
+      if (dWid) formData.append("defaultWidth", dWid)
+      if (dHgt) formData.append("defaultHeight", dHgt)
+      
       formData.append("sellingRate", newProduct.sellingRate)
       if (newProduct.dealerPrice) {
         formData.append("dealerPrice", newProduct.dealerPrice)
@@ -125,6 +138,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
         toast.success(editingProduct ? "Product updated successfully" : "Product added successfully")
         setShowAddModal(false)
         setEditingProduct(null)
+        setUnitScale("FEET")
         setNewProduct({ name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
         
         // Trigger reload
@@ -198,6 +212,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
           )}
           <Button className="flex-1 sm:flex-none" onClick={() => {
             setEditingProduct(null)
+            setUnitScale("FEET")
             setNewProduct({ name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
             setShowAddModal(true)
           }}>
@@ -259,6 +274,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                             className="h-8 w-8 text-muted hover:text-ink"
                             onClick={() => {
                               setEditingProduct(product)
+                              setUnitScale("FEET")
                               setNewProduct({
                                 name: product.name,
                                 unit: product.unit,
@@ -358,23 +374,39 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                   if (!hasDims) return null;
 
                   return (
-                    <div className="grid grid-cols-3 gap-4 p-3 bg-surface-soft rounded-[var(--radius-md)] border border-hairline">
-                      <div>
-                        <label className="text-[12px] font-medium text-muted block mb-1">Std Length</label>
-                        <Input type="number" placeholder="e.g. 8" value={newProduct.defaultLength} onChange={(e) => setNewProduct({...newProduct, defaultLength: e.target.value})} className="h-9" />
+                    <div className="space-y-3">
+                      <div className="flex bg-surface-soft p-1 rounded-[var(--radius-lg)] w-fit">
+                        <button
+                          className={`px-4 py-1.5 text-[13px] font-medium rounded-[var(--radius-md)] transition-colors ${unitScale === "FEET" ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+                          onClick={() => setUnitScale("FEET")}
+                        >
+                          Feet
+                        </button>
+                        <button
+                          className={`px-4 py-1.5 text-[13px] font-medium rounded-[var(--radius-md)] transition-colors ${unitScale === "INCH" ? "bg-white text-ink shadow-sm" : "text-muted hover:text-ink"}`}
+                          onClick={() => setUnitScale("INCH")}
+                        >
+                          Inch
+                        </button>
                       </div>
-                      {(is2D || is3D) && (
+                      <div className="grid grid-cols-3 gap-4 p-3 bg-surface-soft rounded-[var(--radius-md)] border border-hairline">
                         <div>
-                          <label className="text-[12px] font-medium text-muted block mb-1">Std Width</label>
-                          <Input type="number" placeholder="e.g. 4" value={newProduct.defaultWidth} onChange={(e) => setNewProduct({...newProduct, defaultWidth: e.target.value})} className="h-9" />
+                          <label className="text-[12px] font-medium text-muted block mb-1">Std Length {unitScale === "INCH" ? "(in)" : "(ft)"}</label>
+                          <Input type="number" placeholder="e.g. 8" value={newProduct.defaultLength} onChange={(e) => setNewProduct({...newProduct, defaultLength: e.target.value})} className="h-9 bg-white" />
                         </div>
-                      )}
-                      {is3D && (
-                        <div>
-                          <label className="text-[12px] font-medium text-muted block mb-1">Std Height</label>
-                          <Input type="number" value={newProduct.defaultHeight} onChange={(e) => setNewProduct({...newProduct, defaultHeight: e.target.value})} className="h-9" />
-                        </div>
-                      )}
+                        {(is2D || is3D) && (
+                          <div>
+                            <label className="text-[12px] font-medium text-muted block mb-1">Std Width {unitScale === "INCH" ? "(in)" : "(ft)"}</label>
+                            <Input type="number" placeholder="e.g. 4" value={newProduct.defaultWidth} onChange={(e) => setNewProduct({...newProduct, defaultWidth: e.target.value})} className="h-9 bg-white" />
+                          </div>
+                        )}
+                        {is3D && (
+                          <div>
+                            <label className="text-[12px] font-medium text-muted block mb-1">Std Height {unitScale === "INCH" ? "(in)" : "(ft)"}</label>
+                            <Input type="number" value={newProduct.defaultHeight} onChange={(e) => setNewProduct({...newProduct, defaultHeight: e.target.value})} className="h-9 bg-white" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })()}
