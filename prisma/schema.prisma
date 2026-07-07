@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+model User {
+  id       String @id @default(cuid())
+  name     String
+  mobile   String @unique
+  password String
+  role     Role   @default(STAFF)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  mobile    String   @unique
+  address   String?
+  gstNumber String?
+
+  quotations Quotation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  itemCode      String   @unique
+  name          String
+  brand         String?
+  category      String?
+  unit          String   @default("PCS")
+  defaultLength Float?
+  defaultWidth  Float?
+  defaultHeight Float?
+  sellingRate   Float
+  dealerPrice   Float?
+  gstPercentage Float    @default(0)
+  imageUrl      String?
+  active        Boolean  @default(true)
+  isDeleted     Boolean  @default(false)
+
+  quotationItems QuotationItem[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Quotation {
+  id              String   @id @default(cuid())
+  quotationNumber String   @unique
+  quotationDate   DateTime @default(now())
+  customerId      String
+  customer        Customer @relation(fields: [customerId], references: [id])
+  
+  subtotal        Float
+  discount        Float    @default(0)
+  gst             Float    @default(0)
+  transportCharge Float    @default(0)
+  grandTotal      Float
+  remarks         String?
+
+  items           QuotationItem[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model QuotationItem {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  productName String    // Snapshot of product name at the time of quotation
+  
+  quantity    Float
+  length      Float?
+  width       Float?
+  height      Float?
+  pieces      Float?
+  unit        String
+  rate        Float     // Snapshot of selling rate at the time of quotation
+  amount      Float
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
