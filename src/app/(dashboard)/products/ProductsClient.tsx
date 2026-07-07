@@ -125,7 +125,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
         toast.success(editingProduct ? "Product updated successfully" : "Product added successfully")
         setShowAddModal(false)
         setEditingProduct(null)
-        setNewProduct({ name: "", unit: "PCS", sellingRate: "", dealerPrice: "", image: null })
+        setNewProduct({ name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
         
         // Trigger reload
         const temp = search
