@@ -10,8 +10,20 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Creative Interiors | ERP",
-  description: "Enterprise Resource Planning system for Creative Interiors Hardware Department.",
+  title: {
+    default: "Creative Interiors | ERP",
+    template: "%s | Creative Interiors ERP"
+  },
+  description: "Comprehensive Enterprise Resource Planning system for Creative Interiors Hardware Department. Manage products, customers, and generate beautiful quotations effortlessly.",
+  keywords: ["ERP", "Creative Interiors", "Hardware", "Quotations", "Inventory Management", "Business Software"],
+  authors: [{ name: "Creative Interiors" }],
+  creator: "Creative Interiors",
+  publisher: "Creative Interiors",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   manifest: "/site.webmanifest",
   icons: {
     icon: [
@@ -26,7 +38,9 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Creative Interiors | ERP",
+    locale: "en_IN",
+    siteName: "Creative Interiors ERP",
+    title: "Creative Interiors | ERP Dashboard",
     description: "Enterprise Resource Planning system for Creative Interiors Hardware Department.",
     images: [{
       url: "/og-image.png",
@@ -34,6 +48,12 @@ export const metadata: Metadata = {
       height: 630,
       alt: "Creative Interiors ERP Dashboard"
     }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Creative Interiors | ERP",
+    description: "Comprehensive Enterprise Resource Planning system for Creative Interiors.",
+    images: ["/og-image.png"],
   }
 };
 
