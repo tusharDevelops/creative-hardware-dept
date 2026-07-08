@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Search, Upload, Plus, Edit, Trash2, Download } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
   const [products, setProducts] = useState<any[]>([])
@@ -22,6 +23,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
   const [newProduct, setNewProduct] = useState({
     itemCode: "",
     name: "",
+    category: "",
     unit: "PCS",
     defaultLength: "",
     defaultWidth: "",
@@ -129,6 +131,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
       const formData = new FormData()
       if (editingProduct) formData.append("id", editingProduct.id)
       if (newProduct.itemCode) formData.append("itemCode", newProduct.itemCode)
+      if (newProduct.category) formData.append("category", newProduct.category)
       formData.append("name", newProduct.name)
       formData.append("unit", newProduct.unit)
       
@@ -164,7 +167,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
         setShowAddModal(false)
         setEditingProduct(null)
         setUnitScale("FEET")
-        setNewProduct({ itemCode: "", name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
+        setNewProduct({ itemCode: "", name: "", category: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
         
         // Trigger reload
         const temp = search
@@ -242,7 +245,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
           <Button className="flex-1 sm:flex-none" onClick={() => {
             setEditingProduct(null)
             setUnitScale("FEET")
-            setNewProduct({ itemCode: "", name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
+            setNewProduct({ itemCode: "", name: "", category: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
             setShowAddModal(true)
           }}>
             <Plus className="w-4 h-4 mr-2" />
@@ -253,9 +256,23 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
-          <div className="col-span-full py-8 text-center text-muted">
-            Loading products...
-          </div>
+          Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="bg-canvas border border-hairline shadow-none rounded-[var(--radius-lg)] overflow-hidden">
+              <CardContent className="p-4 flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="w-12 h-12 rounded-lg shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-hairline">
+                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
         ) : products.length === 0 ? (
           <div className="col-span-full py-8 text-center text-muted">
             No products found.
@@ -281,6 +298,9 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                     </div>
                     <div className="text-[13px] text-muted flex items-center gap-2 mt-1">
                       <span className="bg-surface-soft px-2 py-0.5 rounded-md font-medium text-[11px] uppercase tracking-wider">{product.unit}</span>
+                      {product.category && (
+                        <span className="bg-brand-accent/10 text-brand-accent px-2 py-0.5 rounded-md font-medium text-[11px] uppercase tracking-wider">{product.category}</span>
+                      )}
                       {product.defaultLength && (
                         <span>
                           {product.defaultLength} {product.defaultWidth ? `× ${product.defaultWidth}` : ''} {product.defaultHeight ? `× ${product.defaultHeight}` : ''}
@@ -314,6 +334,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                     setNewProduct({
                       itemCode: product.itemCode || "",
                       name: product.name,
+                      category: product.category || "",
                       unit: product.unit,
                       defaultLength: product.defaultLength ? product.defaultLength.toString() : "",
                       defaultWidth: product.defaultWidth ? product.defaultWidth.toString() : "",
@@ -381,13 +402,23 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
               <h2 className="title-md text-ink mb-4">{editingProduct ? "Edit Product" : "Add New Product"}</h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="text-[13px] font-medium text-muted block mb-1">Item Code (Optional)</label>
-                    <Input 
-                      placeholder="e.g. PRD-001"
-                      value={newProduct.itemCode}
-                      onChange={(e) => setNewProduct({...newProduct, itemCode: e.target.value})}
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[13px] font-medium text-muted block mb-1">Item Code (Optional)</label>
+                      <Input 
+                        placeholder="e.g. PRD-001"
+                        value={newProduct.itemCode}
+                        onChange={(e) => setNewProduct({...newProduct, itemCode: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[13px] font-medium text-muted block mb-1">Category Tag (Optional)</label>
+                      <Input 
+                        placeholder="e.g. Adhesive, Hardware"
+                        value={newProduct.category}
+                        onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-[13px] font-medium text-muted block mb-1">Product Name *</label>

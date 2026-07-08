@@ -12,10 +12,11 @@ export async function GET(req: NextRequest) {
 
     const where = {
       isDeleted: false,
-      name: {
-        contains: search,
-        mode: "insensitive" as const,
-      },
+      OR: [
+        { name: { contains: search, mode: "insensitive" as const } },
+        { itemCode: { contains: search, mode: "insensitive" as const } },
+        { category: { contains: search, mode: "insensitive" as const } }
+      ]
     }
 
     const [total, data] = await prisma.$transaction([
