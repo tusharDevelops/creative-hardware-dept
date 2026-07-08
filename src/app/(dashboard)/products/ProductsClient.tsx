@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Upload, Plus, Edit, Trash2 } from "lucide-react"
+import { Search, Upload, Plus, Edit, Trash2, Download } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -20,6 +20,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
   const [unitScale, setUnitScale] = useState<"FEET" | "INCH">("FEET")
   
   const [newProduct, setNewProduct] = useState({
+    itemCode: "",
     name: "",
     unit: "PCS",
     defaultLength: "",
@@ -94,6 +95,29 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  const handleDownloadCatalog = async () => {
+    toast.loading("Generating Catalog PDF...")
+    try {
+      const res = await fetch("/api/products/pdf")
+      if (!res.ok) throw new Error("Failed to generate PDF")
+      
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "Product_Catalog.pdf"
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      toast.dismiss()
+      toast.success("Catalog Downloaded")
+    } catch (e) {
+      toast.dismiss()
+      toast.error("Failed to generate Catalog PDF")
+    }
+  }
+
   const handleSaveProduct = async () => {
     if (!newProduct.name || !newProduct.sellingRate) {
       toast.error("Name and Selling Rate are required")
@@ -104,6 +128,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
     try {
       const formData = new FormData()
       if (editingProduct) formData.append("id", editingProduct.id)
+      if (newProduct.itemCode) formData.append("itemCode", newProduct.itemCode)
       formData.append("name", newProduct.name)
       formData.append("unit", newProduct.unit)
       
@@ -139,7 +164,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
         setShowAddModal(false)
         setEditingProduct(null)
         setUnitScale("FEET")
-        setNewProduct({ name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
+        setNewProduct({ itemCode: "", name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
         
         // Trigger reload
         const temp = search
@@ -210,10 +235,14 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
               </Button>
             </>
           )}
+          <Button variant="outline" className="flex-1 sm:flex-none" onClick={handleDownloadCatalog}>
+            <Download className="w-4 h-4 mr-2" />
+            PDF Catalog
+          </Button>
           <Button className="flex-1 sm:flex-none" onClick={() => {
             setEditingProduct(null)
             setUnitScale("FEET")
-            setNewProduct({ name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
+            setNewProduct({ itemCode: "", name: "", unit: "PCS", defaultLength: "", defaultWidth: "", defaultHeight: "", sellingRate: "", dealerPrice: "", image: null })
             setShowAddModal(true)
           }}>
             <Plus className="w-4 h-4 mr-2" />
@@ -242,7 +271,14 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                     <div className="w-12 h-12 rounded-lg bg-surface-dark/5 flex items-center justify-center text-muted-soft text-xs font-bold border border-hairline shrink-0">IMG</div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="title-sm text-ink truncate">{product.name}</h3>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h3 className="title-sm text-ink truncate">{product.name}</h3>
+                      {product.itemCode && (
+                        <span className="text-[10px] font-mono bg-surface-dark/5 text-muted px-1.5 py-0.5 rounded border border-hairline shrink-0">
+                          {product.itemCode}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[13px] text-muted flex items-center gap-2 mt-1">
                       <span className="bg-surface-soft px-2 py-0.5 rounded-md font-medium text-[11px] uppercase tracking-wider">{product.unit}</span>
                       {product.defaultLength && (
@@ -276,6 +312,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                     setEditingProduct(product)
                     setUnitScale("FEET")
                     setNewProduct({
+                      itemCode: product.itemCode || "",
                       name: product.name,
                       unit: product.unit,
                       defaultLength: product.defaultLength ? product.defaultLength.toString() : "",
@@ -343,13 +380,23 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
             <div className="p-6">
               <h2 className="title-md text-ink mb-4">{editingProduct ? "Edit Product" : "Add New Product"}</h2>
               <div className="space-y-4">
-                <div>
-                  <label className="text-[13px] font-medium text-muted block mb-1">Product Name *</label>
-                  <Input 
-                    placeholder="e.g. 18mm Plywood"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                  />
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="text-[13px] font-medium text-muted block mb-1">Item Code (Optional)</label>
+                    <Input 
+                      placeholder="e.g. PRD-001"
+                      value={newProduct.itemCode}
+                      onChange={(e) => setNewProduct({...newProduct, itemCode: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-medium text-muted block mb-1">Product Name *</label>
+                    <Input 
+                      placeholder="e.g. 18mm Plywood"
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

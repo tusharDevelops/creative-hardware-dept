@@ -101,6 +101,7 @@ export async function PUT(req: NextRequest) {
     const id = formData.get("id") as string
     if (!id) return NextResponse.json({ error: "Product ID required" }, { status: 400 })
 
+    const itemCode = formData.get("itemCode") as string | null
     const name = formData.get("name") as string
     const brand = formData.get("brand") as string | null
     const category = formData.get("category") as string | null
@@ -128,6 +129,7 @@ export async function PUT(req: NextRequest) {
     const product = await prisma.product.update({
       where: { id },
       data: {
+        ...(itemCode && { itemCode }),
         name,
         brand,
         category,
