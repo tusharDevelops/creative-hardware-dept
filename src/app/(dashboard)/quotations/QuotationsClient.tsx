@@ -166,7 +166,7 @@ export function QuotationsClient() {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between py-4">
+        <div className="flex items-center justify-between py-4 mt-4 border-t border-hairline">
           <span className="text-sm text-muted">
             Page <span className="font-medium text-ink">{page}</span> of <span className="font-medium text-ink">{totalPages}</span>
           </span>

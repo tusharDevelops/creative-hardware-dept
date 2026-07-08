@@ -310,7 +310,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
           
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-hairline bg-canvas">
+            <div className="flex items-center justify-between py-4 mt-4 border-t border-hairline">
               <span className="text-sm text-muted">
                 Page <span className="font-medium text-ink">{page}</span> of <span className="font-medium text-ink">{totalPages}</span>
               </span>
@@ -339,7 +339,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
       {/* Add Product Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md animate-in zoom-in-95 bg-canvas rounded-[var(--radius-xl)] shadow-xl border-none">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto animate-in zoom-in-95 bg-canvas rounded-[var(--radius-xl)] shadow-xl border-none">
             <div className="p-6">
               <h2 className="title-md text-ink mb-4">{editingProduct ? "Edit Product" : "Add New Product"}</h2>
               <div className="space-y-4">
