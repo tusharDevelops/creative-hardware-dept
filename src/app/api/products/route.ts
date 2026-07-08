@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     
-    const itemCode = formData.get("itemCode") as string || `PRD-${Date.now()}`
+    const itemCode = formData.get("itemCode") as string || `PRD-${Date.now().toString(36).toUpperCase()}`
     const name = formData.get("name") as string
     const brand = formData.get("brand") as string | null
     const category = formData.get("category") as string | null

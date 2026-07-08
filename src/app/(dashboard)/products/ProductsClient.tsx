@@ -402,15 +402,7 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
               <h2 className="title-md text-ink mb-4">{editingProduct ? "Edit Product" : "Add New Product"}</h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[13px] font-medium text-muted block mb-1">Item Code (Optional)</label>
-                      <Input 
-                        placeholder="e.g. PRD-001"
-                        value={newProduct.itemCode}
-                        onChange={(e) => setNewProduct({...newProduct, itemCode: e.target.value})}
-                      />
-                    </div>
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="text-[13px] font-medium text-muted block mb-1">Category Tag (Optional)</label>
                       <Input 
