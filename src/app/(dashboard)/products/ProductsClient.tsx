@@ -17,6 +17,8 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
   const [uploading, setUploading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [adjustingProduct, setAdjustingProduct] = useState<any>(null)
+  const [adjustStockData, setAdjustStockData] = useState({ change: "", remarks: "" })
   const [saving, setSaving] = useState(false)
   const [unitScale, setUnitScale] = useState<"FEET" | "INCH">("FEET")
   
@@ -205,6 +207,36 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  const handleAdjustStock = async () => {
+    if (!adjustStockData.change) return
+    setSaving(true)
+    try {
+      const res = await fetch("/api/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: adjustingProduct.id,
+          quantityChange: Number(adjustStockData.change),
+          remarks: adjustStockData.remarks
+        })
+      })
+      if (res.ok) {
+        toast.success("Stock adjusted successfully")
+        setAdjustingProduct(null)
+        setAdjustStockData({ change: "", remarks: "" })
+        const temp = search
+        setSearch(temp + " ")
+        setTimeout(() => setSearch(temp), 0)
+      } else {
+        toast.error("Failed to adjust stock")
+      }
+    } catch (e) {
+      toast.error("Something went wrong")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3 items-center">
@@ -295,6 +327,9 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                           {product.itemCode}
                         </span>
                       )}
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${product.stockQuantity > 0 ? 'bg-success/10 text-success border-success/20' : 'bg-error/10 text-error border-error/20'}`}>
+                        {product.stockQuantity > 0 ? `${product.stockQuantity} In Stock` : 'Out of Stock'}
+                      </span>
                     </div>
                     <div className="text-[13px] text-muted flex items-center gap-2 mt-1">
                       <span className="bg-surface-soft px-2 py-0.5 rounded-md font-medium text-[11px] uppercase tracking-wider">{product.unit}</span>
@@ -348,6 +383,17 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                 >
                   <Edit className="h-3.5 w-3.5 mr-1.5" />
                   Edit
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-brand-accent hover:text-brand-accent/80 hover:bg-brand-accent/10 h-8 px-3 text-[13px]"
+                  onClick={() => {
+                    setAdjustingProduct(product)
+                    setAdjustStockData({ change: "", remarks: "" })
+                  }}
+                >
+                  Adjust Stock
                 </Button>
                 {isAdmin && (
                   <Button 
@@ -533,6 +579,43 @@ export function ProductsClient({ isAdmin }: { isAdmin: boolean }) {
                 <Button variant="outline" className="flex-1" onClick={() => setShowAddModal(false)}>Cancel</Button>
                 <Button className="flex-1" onClick={handleSaveProduct} disabled={saving}>
                   {saving ? "Saving..." : editingProduct ? "Update Product" : "Save Product"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Adjust Stock Modal */}
+      {adjustingProduct && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-sm max-h-[90vh] overflow-y-auto animate-in zoom-in-95 bg-canvas rounded-[var(--radius-xl)] shadow-xl border-none">
+            <div className="p-6">
+              <h2 className="title-md text-ink mb-2">Adjust Stock</h2>
+              <p className="text-sm text-muted mb-4">{adjustingProduct.name}</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[13px] font-medium text-muted block mb-1">Quantity Change (e.g. 5 or -2) *</label>
+                  <Input 
+                    type="number"
+                    placeholder="e.g. 5 to add, -2 to reduce"
+                    value={adjustStockData.change}
+                    onChange={(e) => setAdjustStockData({...adjustStockData, change: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-[13px] font-medium text-muted block mb-1">Remarks (Optional)</label>
+                  <Input 
+                    placeholder="e.g. Damaged during transit"
+                    value={adjustStockData.remarks}
+                    onChange={(e) => setAdjustStockData({...adjustStockData, remarks: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-8">
+                <Button variant="outline" className="flex-1" onClick={() => setAdjustingProduct(null)}>Cancel</Button>
+                <Button className="flex-1" onClick={handleAdjustStock} disabled={saving || !adjustStockData.change}>
+                  {saving ? "Saving..." : "Adjust Stock"}
                 </Button>
               </div>
             </div>

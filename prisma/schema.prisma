@@ -25,39 +25,142 @@ model User {
 }
 
 model Customer {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   name      String
-  mobile    String   @unique
+  mobile    String  @unique
   address   String?
   gstNumber String?
 
   quotations Quotation[]
+  sales      Sale[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id            String   @id @default(cuid())
-  itemCode      String   @unique
+  id            String  @id @default(cuid())
+  itemCode      String  @unique
   name          String
   brand         String?
   category      String?
-  unit          String   @default("PCS")
+  unit          String  @default("PCS")
   defaultLength Float?
   defaultWidth  Float?
   defaultHeight Float?
   sellingRate   Float
   dealerPrice   Float?
-  gstPercentage Float    @default(0)
+  gstPercentage Float   @default(0)
   imageUrl      String?
-  active        Boolean  @default(true)
-  isDeleted     Boolean  @default(false)
+  active        Boolean @default(true)
+  isDeleted     Boolean @default(false)
+  stockQuantity Float   @default(0)
 
-  quotationItems QuotationItem[]
+  quotationItems    QuotationItem[]
+  purchaseItems     PurchaseItem[]
+  saleItems         SaleItem[]
+  stockTransactions StockTransaction[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Purchase {
+  id             String   @id @default(cuid())
+  purchaseNumber String   @unique
+  purchaseDate   DateTime @default(now())
+  supplierName   String
+  supplierMobile String?
+
+  subtotal        Float
+  discount        Float   @default(0)
+  gst             Float   @default(0)
+  transportCharge Float   @default(0)
+  grandTotal      Float
+  remarks         String?
+
+  items PurchaseItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PurchaseItem {
+  id         String   @id @default(cuid())
+  purchaseId String
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  productName String
+
+  quantity Float
+  unit     String
+  rate     Float
+  amount   Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sale {
+  id         String   @id @default(cuid())
+  saleNumber String   @unique
+  saleDate   DateTime @default(now())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  subtotal        Float
+  discount        Float   @default(0)
+  gst             Float   @default(0)
+  transportCharge Float   @default(0)
+  grandTotal      Float
+  remarks         String?
+
+  items SaleItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SaleItem {
+  id     String @id @default(cuid())
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  productName String
+
+  quantity Float
+  length   Float?
+  width    Float?
+  height   Float?
+  pieces   Float?
+  unit     String
+  rate     Float
+  amount   Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TransactionType {
+  IN
+  OUT
+}
+
+model StockTransaction {
+  id        String          @id @default(cuid())
+  productId String
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type      TransactionType
+  quantity  Float
+  reference String // e.g., "Purchase #123", "Sale #456"
+  remarks   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Quotation {
@@ -66,38 +169,38 @@ model Quotation {
   quotationDate   DateTime @default(now())
   customerId      String
   customer        Customer @relation(fields: [customerId], references: [id])
-  
+
   subtotal        Float
-  discount        Float    @default(0)
-  gst             Float    @default(0)
-  transportCharge Float    @default(0)
+  discount        Float   @default(0)
+  gst             Float   @default(0)
+  transportCharge Float   @default(0)
   grandTotal      Float
   remarks         String?
 
-  items           QuotationItem[]
+  items QuotationItem[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model QuotationItem {
   id          String    @id @default(cuid())
   quotationId String
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-  
-  productId   String
-  product     Product   @relation(fields: [productId], references: [id])
-  productName String    // Snapshot of product name at the time of quotation
-  
-  quantity    Float
-  length      Float?
-  width       Float?
-  height      Float?
-  pieces      Float?
-  unit        String
-  rate        Float     // Snapshot of selling rate at the time of quotation
-  amount      Float
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  productName String // Snapshot of product name at the time of quotation
+
+  quantity Float
+  length   Float?
+  width    Float?
+  height   Float?
+  pieces   Float?
+  unit     String
+  rate     Float // Snapshot of selling rate at the time of quotation
+  amount   Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

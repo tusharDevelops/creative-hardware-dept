@@ -164,3 +164,40 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Failed to delete product" }, { status: 500 })
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id, quantityChange, remarks } = body
+
+    if (!id || quantityChange === undefined) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    const numChange = Number(quantityChange)
+
+    const updatedProduct = await prisma.$transaction(async (tx) => {
+      const product = await tx.product.update({
+        where: { id },
+        data: { stockQuantity: { increment: numChange } }
+      })
+
+      await tx.stockTransaction.create({
+        data: {
+          productId: id,
+          type: numChange >= 0 ? "IN" : "OUT",
+          quantity: Math.abs(numChange),
+          reference: "MANUAL_ADJUSTMENT",
+          remarks: remarks || "Manual stock adjustment"
+        }
+      })
+
+      return product
+    })
+
+    return NextResponse.json(updatedProduct)
+  } catch (error: any) {
+    console.error("Failed to adjust stock:", error)
+    return NextResponse.json({ error: "Failed to adjust stock" }, { status: 500 })
+  }
+}

@@ -8,30 +8,30 @@ import { toast } from "sonner"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 
-export function QuotationsClient() {
-  const [quotations, setQuotations] = useState<any[]>([])
+export function SalesClient() {
+  const [sales, setSales] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
-    const fetchQuotes = async () => {
+    const fetchSales = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/quotations?search=${encodeURIComponent(search)}&page=${page}&limit=20`)
+        const res = await fetch(`/api/sales?search=${encodeURIComponent(search)}&page=${page}&limit=20`)
         const json = await res.json()
-        setQuotations(json.data || [])
+        setSales(json.data || [])
         setTotalPages(json.totalPages || 1)
       } catch (e) {
-        toast.error("Failed to load quotations")
+        toast.error("Failed to load sales")
       } finally {
         setLoading(false)
       }
     }
 
     const timer = setTimeout(() => {
-      fetchQuotes()
+      fetchSales()
     }, 300)
 
     return () => clearTimeout(timer)
@@ -44,7 +44,7 @@ export function QuotationsClient() {
   const handleDownloadPdf = async (id: string, number: string) => {
     toast.loading("Generating PDF...")
     try {
-      const res = await fetch(`/api/quotations/${id}/pdf`)
+      const res = await fetch(`/api/sales/${id}/pdf`)
       if (!res.ok) throw new Error("Failed to generate PDF")
       
       const blob = await res.blob()
@@ -64,21 +64,21 @@ export function QuotationsClient() {
     }
   }
 
-  const handleDeleteQuote = async (id: string, number: string) => {
-    if (!confirm(`Are you sure you want to delete quotation ${number}?`)) return
+  const handleDeleteSale = async (id: string, number: string) => {
+    if (!confirm(`Are you sure you want to delete sale ${number}?`)) return
     try {
-      const res = await fetch("/api/quotations", {
+      const res = await fetch("/api/sales", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id })
       })
       if (res.ok) {
-        toast.success("Quotation deleted successfully")
+        toast.success("Sale deleted successfully")
         const temp = search
         setSearch(temp + " ")
         setTimeout(() => setSearch(temp), 0)
       } else {
-        toast.error("Failed to delete quotation")
+        toast.error("Failed to delete sale")
       }
     } catch (e) {
       toast.error("Something went wrong")
@@ -91,28 +91,28 @@ export function QuotationsClient() {
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
           <Input 
-            placeholder="Search by quote number, customer name or mobile..." 
+            placeholder="Search by sale number, customer name or mobile..." 
             className="pl-9"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Link href="/quotations/new" className="w-full sm:w-auto">
+        <Link href="/sales/new" className="w-full sm:w-auto">
           <Button className="w-full">
             <Plus className="w-4 h-4 mr-2" />
-            New Quote
+            New Sale
           </Button>
         </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
-          <div className="col-span-full py-8 text-center text-muted">Loading quotations...</div>
-        ) : quotations.length === 0 ? (
-          <div className="col-span-full py-8 text-center text-muted">No quotations found.</div>
+          <div className="col-span-full py-8 text-center text-muted">Loading sales...</div>
+        ) : sales.length === 0 ? (
+          <div className="col-span-full py-8 text-center text-muted">No sales found.</div>
         ) : (
-          quotations.map((quote) => (
-            <Card key={quote.id} className="bg-canvas border border-hairline shadow-none hover:shadow-sm transition-shadow rounded-[var(--radius-lg)] overflow-hidden flex flex-col">
+          sales.map((sale) => (
+            <Card key={sale.id} className="bg-canvas border border-hairline shadow-none hover:shadow-sm transition-shadow rounded-[var(--radius-lg)] overflow-hidden flex flex-col">
               <CardContent className="p-4 flex-1 flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -120,9 +120,9 @@ export function QuotationsClient() {
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="title-sm text-ink">{quote.quotationNumber}</div>
+                      <div className="title-sm text-ink">{sale.saleNumber}</div>
                       <div className="text-[12px] text-muted-soft">
-                        {new Date(quote.quotationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        {new Date(sale.saleDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </div>
                     </div>
                   </div>
@@ -130,13 +130,13 @@ export function QuotationsClient() {
                 
                 <div>
                   <div className="text-[11px] uppercase tracking-wider text-muted font-medium mb-1">Customer</div>
-                  <div className="font-medium text-ink truncate">{quote.customer.name}</div>
-                  <div className="text-[13px] text-muted-soft">{quote.customer.mobile}</div>
+                  <div className="font-medium text-ink truncate">{sale.customer.name}</div>
+                  <div className="text-[13px] text-muted-soft">{sale.customer.mobile}</div>
                 </div>
                 
                 <div className="mt-auto pt-4 border-t border-hairline">
                   <div className="text-[11px] uppercase tracking-wider text-muted font-medium mb-1">Grand Total</div>
-                  <div className="font-semibold text-ink text-lg">₹{quote.grandTotal}</div>
+                  <div className="font-semibold text-ink text-lg">₹{sale.grandTotal}</div>
                 </div>
               </CardContent>
               <div className="bg-surface-soft/50 border-t border-hairline p-2 flex justify-end gap-2">
@@ -144,25 +144,16 @@ export function QuotationsClient() {
                   variant="ghost" 
                   size="sm"
                   className="text-muted hover:text-ink h-8 px-3 text-[13px]"
-                  onClick={() => handleDownloadPdf(quote.id, quote.quotationNumber)}
+                  onClick={() => handleDownloadPdf(sale.id, sale.saleNumber)}
                 >
                   <Download className="h-3.5 w-3.5 mr-1.5" />
                   PDF
                 </Button>
-                <Link href={`/sales/new?quotationId=${quote.id}`}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-brand-accent hover:text-brand-accent/80 hover:bg-brand-accent/10 h-8 px-3 text-[13px]"
-                  >
-                    Convert to Sale
-                  </Button>
-                </Link>
                 <Button 
                   variant="ghost" 
                   size="sm"
                   className="text-error/70 hover:text-error hover:bg-error/10 h-8 px-3 text-[13px]"
-                  onClick={() => handleDeleteQuote(quote.id, quote.quotationNumber)}
+                  onClick={() => handleDeleteSale(sale.id, sale.saleNumber)}
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-1.5" />
                   Delete
