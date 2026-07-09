@@ -15,7 +15,9 @@ export default function DashboardLayout({
         </div>
         <nav className="flex items-center gap-6">
           <a href="/" className="nav-link text-ink">Dashboard</a>
+          <a href="/sales" className="nav-link text-ink">Sales</a>
           <a href="/quotations" className="nav-link text-ink">Quotations</a>
+          <a href="/purchases" className="nav-link text-ink">Purchases</a>
           <a href="/products" className="nav-link text-ink">Products</a>
           <a href="/customers" className="nav-link text-ink">Customers</a>
           <div className="w-px h-4 bg-surface-soft mx-2" />
