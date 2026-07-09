@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
 
     const where = search ? {
       OR: [
+        { id: { equals: search } },
         { quotationNumber: { contains: search, mode: "insensitive" as const } },
         { customer: { name: { contains: search, mode: "insensitive" as const } } },
         { customer: { mobile: { contains: search, mode: "insensitive" as const } } },
